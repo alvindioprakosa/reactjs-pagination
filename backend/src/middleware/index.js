@@ -1,18 +1,27 @@
 import express from "express";
-const appMiddleware = express();
 import cors from "cors";
 import router from "../routes/index.js";
 
+const appMiddleware = express();
+
+// CORS setup (recommended to whitelist origin in production)
 appMiddleware.use(
   cors({
-    origin: true,
+    origin: true, // bisa diganti jadi specific origin misalnya "http://localhost:5173"
     credentials: true,
-    preflightContinue: false,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
   })
 );
+
+// Preflight request handler
 appMiddleware.options("*", cors());
+
+// Body parser
 appMiddleware.use(express.json());
-appMiddleware.use(router);
+appMiddleware.use(express.urlencoded({ extended: true }));
+
+// Main API routes
+appMiddleware.use("/api", router);
 
 export default appMiddleware;
