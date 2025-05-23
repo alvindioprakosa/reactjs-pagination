@@ -3,7 +3,7 @@ import personalRoute from "./personal.route.js";
 
 const router = Router();
 
-// Gunakan prefix langsung di appMiddleware, jadi cukup /personals di sini
+// Semua endpoint diawali dengan /api di appMiddleware, jadi cukup /personals di sini
 router.use("/personals", personalRoute);
 
 export default router;
