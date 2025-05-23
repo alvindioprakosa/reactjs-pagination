@@ -1,4 +1,3 @@
--- CreateTable
 CREATE TABLE "Personaldata" (
     "id" SERIAL NOT NULL,
     "first_name" TEXT NOT NULL,
