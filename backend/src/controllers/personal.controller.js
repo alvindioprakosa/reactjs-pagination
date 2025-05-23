@@ -7,92 +7,36 @@ export const getPersonaldata = async (req, res) => {
     const search = req.query.search || "";
     const offset = page * limit;
 
-    const totalRows = await prisma.personaldata.count({
-      where: {
-        OR: [
-          {
-            first_name: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            last_name: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            email: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            gender: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            ip_address: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-        ],
-      },
-    });
+    const searchCondition = {
+      OR: ["first_name", "last_name", "email", "gender", "ip_address"].map((field) => ({
+        [field]: {
+          contains: search,
+          mode: "insensitive",
+        },
+      })),
+    };
+
+    const [totalRows, result] = await Promise.all([
+      prisma.personaldata.count({ where: searchCondition }),
+      prisma.personaldata.findMany({
+        where: searchCondition,
+        skip: offset,
+        take: limit,
+        orderBy: { id: "desc" },
+      }),
+    ]);
+
     const totalPages = Math.ceil(totalRows / limit);
-    const response = await prisma.personaldata.findMany({
-      where: {
-        OR: [
-          {
-            first_name: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            last_name: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            email: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            gender: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-          {
-            ip_address: {
-              contains: search,
-              mode: "insensitive",
-            },
-          },
-        ],
-      },
-      skip: offset,
-      take: limit,
-      orderBy: {
-        id: "desc",
-      },
-    });
+
     return res.status(200).json({
-      result: response,
+      result,
       page,
       limit,
       totalRows,
       totalPages,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
