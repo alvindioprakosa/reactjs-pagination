@@ -4,24 +4,31 @@ import router from "../routes/index.js";
 
 const appMiddleware = express();
 
-// CORS setup (recommended to whitelist origin in production)
+// CORS setup — sebaiknya whitelist origin di produksi
 appMiddleware.use(
   cors({
-    origin: true, // bisa diganti jadi specific origin misalnya "http://localhost:5173"
+    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173", // Gunakan env untuk fleksibilitas
     credentials: true,
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    preflightContinue: false,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
 );
-
-// Preflight request handler
-appMiddleware.options("*", cors());
 
 // Body parser
 appMiddleware.use(express.json());
 appMiddleware.use(express.urlencoded({ extended: true }));
 
-// Main API routes
+// API Routes
 appMiddleware.use("/api", router);
+
+// Optional: 404 handler
+appMiddleware.use((req, res) => {
+  res.status(404).json({ message: "Endpoint not found" });
+});
+
+// Optional: Error handler
+appMiddleware.use((err, req, res, next) => {
+  console.error("API Error:", err);
+  res.status(500).json({ message: "Internal Server Error" });
+});
 
 export default appMiddleware;
